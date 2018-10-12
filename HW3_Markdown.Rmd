@@ -38,3 +38,20 @@ summarize(n = n())
 ```
 
 The states observed at 7 locations in 2002 are Connecticut, Florida, and North Carolina
+
+###
+
+#Problem Two
+
+```{r Instacart, include = FALSE}
+instacart
+```
+
+###Write a short description of the dataset, noting the size and structure of the data, describing some key variables, and giving illstrative examples of observations
+
+This data, with 1,384,617 rows and 15 columns, articulates information about grocery shopping behavior. Key variables include aisle, which describes the location of an item, and product_id, which gives a numeric code for a purchased product. For instance, order_id 1 included items such as Bulgarian Yogurt and Organic 4% Milk Fat Whole Milk, both in the department 'dairy eggs'. Additionally, I know the hour of day during this order was 10 am, that it has been 9 days since the last order, and that yogurt was added to the cart first.
+
+###How many aisles are there, and which aisles are the most items ordered from?
+```{r aisles}
+instacart
+```
