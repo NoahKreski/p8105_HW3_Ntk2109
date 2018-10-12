@@ -30,7 +30,19 @@ summarize(n = n())
 
 The states observed at 7 locations in 2002 are Connecticut, Florida, and North Carolina
 
-### 
+### Make a “spaghetti plot” that shows the number of locations in each state from 2002 to 2010.
+
+``` r
+BRFSS_Spaghetti = BRFSS_Cleaned%>%
+                  #This includes all unique locations by year
+                  distinct(year,locationdesc,.keep_all = TRUE)%>%
+                  #These two lines tell us how many locations exist by state and year
+                  group_by(year,locationabbr)%>%
+                  summarize(n = n())
+ggplot(data = BRFSS_Spaghetti, aes(x=year, y=n, group=locationabbr, color = locationabbr)) + geom_line()
+```
+
+![](HW3_Markdown_files/figure-markdown_github/spaghetti-1.png) This spaghetti plot tracks the number of observations by year and state.
 
 Problem Two
 ===========
