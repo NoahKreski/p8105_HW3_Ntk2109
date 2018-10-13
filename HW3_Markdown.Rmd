@@ -27,7 +27,7 @@ BRFSS_Cleaned = janitor::clean_names(brfss_smart2010)%>%
 
 ###In 2002, which states were observed at 7 locations?
 
-```{r 2002 locations, eval = FALSE}
+```{r 2002 locations}
 #This gets the 2002 entries.
 filter(BRFSS_Cleaned, year == 2002)%>%
 #This includes a single datum for each location
@@ -53,6 +53,31 @@ ggplot(data = BRFSS_Spaghetti, aes(x=year, y=n, group=locationabbr, color = loca
 ```
 This spaghetti plot tracks the number of observations by year and state.
 
+###Make a table showing, for the years 2002, 2006, and 2010, the mean and standard deviation of the proportion of “Excellent” responses across locations in NY State.
+```{r NY Excellent}
+#Th sese two steps will isolate the years needed and limit data to excellent responses across NY
+filter(BRFSS_Cleaned, year %in% c(2002, 2006, 2010))%>%
+filter(response == "Excellent", locationabbr == "NY")%>%
+#This sets up the data for exploratory summarization, and the production of a mean and standard deviation
+group_by(year)%>%
+summarize(mean_excellent = mean(data_value), sd_excellent = sd(data_value))
+
+```
+
+###For each year and state, compute the average proportion in each response category (taking the average across locations in a state). Make a five-panel plot that shows, for each response category separately, the distribution of these state-level averages over time
+
+```{r Five Panel}
+BRFSS_Five= BRFSS_Cleaned%>%
+            group_by(year, locationabbr, response)%>%
+            summarize(mean_response = mean(data_value))
+ggplot(filter(BRFSS_Five, response == "Excellent"), aes(x = as.factor(year), y = mean_response)) + geom_boxplot()
+ggplot(filter(BRFSS_Five, response == "Very good"), aes(x = as.factor(year), y = mean_response)) + geom_boxplot()
+ggplot(filter(BRFSS_Five, response == "Good"), aes(x = as.factor(year), y = mean_response)) + geom_boxplot()
+ggplot(filter(BRFSS_Five, response == "Fair"), aes(x = as.factor(year), y = mean_response)) + geom_boxplot()
+ggplot(filter(BRFSS_Five, response == "Poor"), aes(x = as.factor(year), y = mean_response)) + geom_boxplot()
+
+```
+
 #Problem Two
 
 ```{r Instacart, include = FALSE}
@@ -64,12 +89,13 @@ instacart
 This data, with 1,384,617 rows and 15 columns, articulates information about grocery shopping behavior. Key variables include aisle, which describes the location of an item, and product_id, which gives a numeric code for a purchased product. For instance, order_id 1 included items such as Bulgarian Yogurt and Organic 4% Milk Fat Whole Milk, both in the department 'dairy eggs'. Additionally, I know the hour of day during this order was 10 am, that it has been 9 days since the last order, and that yogurt was added to the cart first.
 
 ###How many aisles are there, and which aisles are the most items ordered from?
-```{r aisles, eval=FALSE}
+```{r aisles}
+#These three lines generate the number of observations for every aisle, and by extension, includes every aisle as a row. 
 instacart%>%
 group_by(aisle)%>%
 summarize(obs=n())
 
-
+#This code matches the above, but then isolates the 5 most common/popular aisles.
 instacart%>%
 group_by(aisle)%>%
 summarize(obs=n())%>%
@@ -79,10 +105,38 @@ This summarization code provides a summary with 134 rows, one for each aisle, so
 
 ###Make a plot that shows the number of items ordered in each aisle. Order aisles sensibly, and organize your plot so others can read it.
 ```{r aisles plot}
+#These three lines create a data set with the number of items per aisle, ready for plotting
 instacart_summary_data = instacart%>%
                          group_by(aisle_id)%>%
                          summarize(obs=n())
+#These lines generate the plot with aisle in numerical order, and appropriate labels
 ggplot(instacart_summary_data, aes(x = aisle_id, y = obs)) + 
   geom_point() + labs(title = "Items Ordered per aisle", x = "Aisle", y = "Orders")
 ```
 
+###Make a table showing the most popular item in each of the aisles “baking ingredients”, “dog food care”, and “packaged vegetables fruits”.
+
+```{r popular items}
+#These two steps isolate the aisles of interest and group by aisle and product name for analyses
+filter(instacart, aisle %in% c("baking ingredients", "dog food care", "packaged vegetables fruits"))%>%
+group_by(aisle, product_name)%>%
+#These remaining steps generate a sample size per product, groups by aisle, and generates the most common product in each category
+count(product_name)%>%
+group_by(aisle)%>%
+top_n(1)
+```
+The most common product purchased in the aisles baking ingredients, dog food care, and packaged vegetables fruits are as follows: Light Brown Sugar, Snack Sticks Chicken & Rice Recipe Dog Treats, and Organic Baby Spinach.
+
+###Make a table showing the mean hour of the day at which Pink Lady Apples and Coffee Ice Cream are ordered on each day of the week; format this table for human readers (i.e. produce a 2 x 7 table).
+
+```{r pink lady}
+#These two lines limit the data to the two products of interest, and then group by product and day of week
+filter(instacart, product_name %in% c("Pink Lady Apples", "Coffee Ice Cream"))%>%
+group_by(product_name, order_dow)%>%
+#These two lines generate a mean hour of the day for each day of the week and product, before creating a more readable 2x7 table
+summarize(mean_hour = mean(order_hour_of_day))%>%
+spread(key=order_dow, value=mean_hour)
+```
+The above table shows the mean hour of the day for each day of the week, per product. While we can assume 0 is Sunday here, without this explicit information, this table remains an accurate representation of the necessary data.
+
+#Problem Three
