@@ -51,6 +51,7 @@ BRFSS_Spaghetti = BRFSS_Cleaned%>%
                   summarize(n = n())
 ggplot(data = BRFSS_Spaghetti, aes(x=year, y=n, group=locationabbr, color = locationabbr)) + geom_line()
 ```
+
 This spaghetti plot tracks the number of observations by year and state.
 
 ###Make a table showing, for the years 2002, 2006, and 2010, the mean and standard deviation of the proportion of “Excellent” responses across locations in NY State.
@@ -66,16 +67,21 @@ summarize(mean_excellent = mean(data_value), sd_excellent = sd(data_value))
 
 ###For each year and state, compute the average proportion in each response category (taking the average across locations in a state). Make a five-panel plot that shows, for each response category separately, the distribution of these state-level averages over time
 
-```{r Five Panel}
+```{r Five Panel, Warning = FALSE}
+#Getting a data set with a proportion for each response level by state and year
 BRFSS_Five= BRFSS_Cleaned%>%
             group_by(year, locationabbr, response)%>%
-            summarize(mean_response = mean(data_value))
-ggplot(filter(BRFSS_Five, response == "Excellent"), aes(x = as.factor(year), y = mean_response)) + geom_boxplot()
-ggplot(filter(BRFSS_Five, response == "Very good"), aes(x = as.factor(year), y = mean_response)) + geom_boxplot()
-ggplot(filter(BRFSS_Five, response == "Good"), aes(x = as.factor(year), y = mean_response)) + geom_boxplot()
-ggplot(filter(BRFSS_Five, response == "Fair"), aes(x = as.factor(year), y = mean_response)) + geom_boxplot()
-ggplot(filter(BRFSS_Five, response == "Poor"), aes(x = as.factor(year), y = mean_response)) + geom_boxplot()
-
+            summarize(mean_response = mean(data_value))%>%
+            group_by(year, response)
+#I am setting up a 5 plot panel
+par(mfrow=c(2,3))
+par(mar=c(3,2,1,2))
+#These boxplots graph each response level over time.
+boxplot(mean_response~year,filter(BRFSS_Five, response == "Excellent"), main = "Excellent")
+boxplot(mean_response~year,filter(BRFSS_Five, response == "Very good"), main = "Very Good")
+boxplot(mean_response~year,filter(BRFSS_Five, response == "Good"), main = "Good")
+boxplot(mean_response~year,filter(BRFSS_Five, response == "Fair"), main = "Fair")
+boxplot(mean_response~year,filter(BRFSS_Five, response == "Poor"), main = "Poor")
 ```
 
 #Problem Two
@@ -140,3 +146,42 @@ spread(key=order_dow, value=mean_hour)
 The above table shows the mean hour of the day for each day of the week, per product. While we can assume 0 is Sunday here, without this explicit information, this table remains an accurate representation of the necessary data.
 
 #Problem Three
+
+###Do some data cleaning. Create separate variables for year, month, and day. Ensure observations for temperature, precipitation, and snowfall are given in reasonable units. For snowfall, what are the most commonly observed values? Why?
+
+```{r Noaa}
+ny_noaa_cleaned = ny_noaa%>%
+                  #This separates the date variable into relevant categories.
+                  separate(date, c("Year", "Month", "Day"), sep = "-")%>%
+                  #This converts from tenths of mm to full millimeters, and from tenths of degrees Celsius to full degrees.
+                  mutate(prcp = prcp/10, tmax = as.numeric(tmax)/10, tmin = as.numeric(tmin)/10)
+#This Checks the most common snowfall values
+ny_noaa_cleaned%>%
+count(snow)%>%
+top_n(2)
+```
+
+The most common answers for amount of snowfall are 0, as many places don't get any snow, and NA, as many places just do not document this.
+
+###Make a two-panel plot showing the average max temperature in January and in July in each station across years. Is there any observable / interpretable structure? Any outliers?
+
+```{r tmax}
+maxt= ny_noaa_cleaned%>%
+      filter(Month %in% c("01", "07"))%>%
+      group_by(Year, Month)%>%
+      summarise(tmean = mean(tmax, na.rm = TRUE))
+par(mfrow = c(1,2))
+      plot(filter(maxt, Month == "01")$Year, filter(maxt, Month == "01")$tmean, xlab = "Year", ylab = "tmax", main = "January")
+      plot(filter(maxt, Month == "07")$Year, filter(maxt, Month == "07")$tmean, xlab = "Year", ylab = "tmax", main = "July")
+
+```
+
+The above plots show the change in mean maximum temperature over the years for January and July. Any patterns are difficult to discern from this visualization alone, and further analysis may be necessary. Outliers, such as a uniquely low 1994 January temperature or uniquely low 2009 July temperature, do exist.
+
+###Make a two-panel plot showing (i) tmax vs tmin for the full dataset (note that a scatterplot may not be the best option); and (ii) make a plot showing the distribution of snowfall values greater than 0 and less than 100 separately by year.
+
+```{r maxmin}
+
+
+
+```

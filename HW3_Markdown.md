@@ -57,7 +57,9 @@ BRFSS_Spaghetti = BRFSS_Cleaned%>%
 ggplot(data = BRFSS_Spaghetti, aes(x=year, y=n, group=locationabbr, color = locationabbr)) + geom_line()
 ```
 
-![](HW3_Markdown_files/figure-markdown_github/spaghetti-1.png) This spaghetti plot tracks the number of observations by year and state.
+![](HW3_Markdown_files/figure-markdown_github/spaghetti-1.png)
+
+This spaghetti plot tracks the number of observations by year and state.
 
 ### Make a table showing, for the years 2002, 2006, and 2010, the mean and standard deviation of the proportion of “Excellent” responses across locations in NY State.
 
@@ -80,47 +82,23 @@ summarize(mean_excellent = mean(data_value), sd_excellent = sd(data_value))
 ### For each year and state, compute the average proportion in each response category (taking the average across locations in a state). Make a five-panel plot that shows, for each response category separately, the distribution of these state-level averages over time
 
 ``` r
+#Getting a data set with a proportion for each response level by state and year
 BRFSS_Five= BRFSS_Cleaned%>%
             group_by(year, locationabbr, response)%>%
-            summarize(mean_response = mean(data_value))
-ggplot(filter(BRFSS_Five, response == "Excellent"), aes(x = as.factor(year), y = mean_response)) + geom_boxplot()
+            summarize(mean_response = mean(data_value))%>%
+            group_by(year, response)
+#I am setting up a 5 plot panel
+par(mfrow=c(2,3))
+par(mar=c(3,2,1,2))
+#These boxplots graph each response level over time.
+boxplot(mean_response~year,filter(BRFSS_Five, response == "Excellent"), main = "Excellent")
+boxplot(mean_response~year,filter(BRFSS_Five, response == "Very good"), main = "Very Good")
+boxplot(mean_response~year,filter(BRFSS_Five, response == "Good"), main = "Good")
+boxplot(mean_response~year,filter(BRFSS_Five, response == "Fair"), main = "Fair")
+boxplot(mean_response~year,filter(BRFSS_Five, response == "Poor"), main = "Poor")
 ```
-
-    ## Warning: Removed 4 rows containing non-finite values (stat_boxplot).
 
 ![](HW3_Markdown_files/figure-markdown_github/Five%20Panel-1.png)
-
-``` r
-ggplot(filter(BRFSS_Five, response == "Very good"), aes(x = as.factor(year), y = mean_response)) + geom_boxplot()
-```
-
-    ## Warning: Removed 6 rows containing non-finite values (stat_boxplot).
-
-![](HW3_Markdown_files/figure-markdown_github/Five%20Panel-2.png)
-
-``` r
-ggplot(filter(BRFSS_Five, response == "Good"), aes(x = as.factor(year), y = mean_response)) + geom_boxplot()
-```
-
-    ## Warning: Removed 8 rows containing non-finite values (stat_boxplot).
-
-![](HW3_Markdown_files/figure-markdown_github/Five%20Panel-3.png)
-
-``` r
-ggplot(filter(BRFSS_Five, response == "Fair"), aes(x = as.factor(year), y = mean_response)) + geom_boxplot()
-```
-
-    ## Warning: Removed 2 rows containing non-finite values (stat_boxplot).
-
-![](HW3_Markdown_files/figure-markdown_github/Five%20Panel-4.png)
-
-``` r
-ggplot(filter(BRFSS_Five, response == "Poor"), aes(x = as.factor(year), y = mean_response)) + geom_boxplot()
-```
-
-    ## Warning: Removed 1 rows containing non-finite values (stat_boxplot).
-
-![](HW3_Markdown_files/figure-markdown_github/Five%20Panel-5.png)
 
 Problem Two
 ===========
