@@ -79,6 +79,8 @@ summarize(mean_excellent = mean(data_value), sd_excellent = sd(data_value))
     ## 2  2006           22.5         4.00
     ## 3  2010           22.7         3.57
 
+This table shows the average proportion and standard deviation of Excellent responses in New York in 2002, 2006, and 2010.
+
 ### For each year and state, compute the average proportion in each response category (taking the average across locations in a state). Make a five-panel plot that shows, for each response category separately, the distribution of these state-level averages over time
 
 ``` r
@@ -213,6 +215,30 @@ The above table shows the mean hour of the day for each day of the week, per pro
 Problem Three
 =============
 
+### The goal is to do some exploration of this dataset. To that end, write a short description of the dataset, noting the size and structure of the data, describing some key variables, and indicating the extent to which missing data is an issue.
+
+``` r
+#I am checking the general structure of the dataset
+ny_noaa
+#I am seeing the distribution of prcp, and how much is missing. The statements below are the same goal for each variable
+ny_noaa%>%
+count(prcp)
+
+ny_noaa%>%
+count(snow)
+
+ny_noaa%>%
+count(snwd)
+  
+ny_noaa%>%
+count(tmax)
+  
+ny_noaa%>%
+count(tmin)
+```
+
+This data set, which contains 7 columns and 2,595,176 rows, features a few critical variables. These include date and id, which gives the location and timing of observations, and data for weather information like temperature or snowfall. Missing data is a huge issue, with at least 100,000 NA values for each values, and over 1,000,000 for each temperature variable.
+
 ### Do some data cleaning. Create separate variables for year, month, and day. Ensure observations for temperature, precipitation, and snowfall are given in reasonable units. For snowfall, what are the most commonly observed values? Why?
 
 ``` r
@@ -281,3 +307,5 @@ grid.arrange(plotX, plotY)
 ```
 
 ![](HW3_Markdown_files/figure-markdown_github/maxmin-1.png)
+
+The above visuals show the distribution of tmax vs tmin, with lighter blues showing higher frequency, and boxplots of snowfall by year.
