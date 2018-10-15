@@ -212,3 +212,72 @@ The above table shows the mean hour of the day for each day of the week, per pro
 
 Problem Three
 =============
+
+### Do some data cleaning. Create separate variables for year, month, and day. Ensure observations for temperature, precipitation, and snowfall are given in reasonable units. For snowfall, what are the most commonly observed values? Why?
+
+``` r
+ny_noaa_cleaned = ny_noaa%>%
+                  #This separates the date variable into relevant categories.
+                  separate(date, c("Year", "Month", "Day"), sep = "-")%>%
+                  #This converts from tenths of mm to full millimeters, and from tenths of degrees Celsius to full degrees.
+                  mutate(prcp = prcp/10, tmax = as.numeric(tmax)/10, tmin = as.numeric(tmin)/10)
+#This Checks the most common snowfall values
+ny_noaa_cleaned%>%
+count(snow)%>%
+top_n(2)
+```
+
+    ## Selecting by n
+
+    ## # A tibble: 2 x 2
+    ##    snow       n
+    ##   <int>   <int>
+    ## 1     0 2008508
+    ## 2    NA  381221
+
+The most common answers for amount of snowfall are 0, as many places don't get any snow, and NA, as many places just do not document this.
+
+### Make a two-panel plot showing the average max temperature in January and in July in each station across years. Is there any observable / interpretable structure? Any outliers?
+
+``` r
+maxt= ny_noaa_cleaned%>%
+      filter(Month %in% c("01", "07"))%>%
+      group_by(Year, Month)%>%
+      summarise(tmean = mean(tmax, na.rm = TRUE))
+par(mfrow = c(1,2))
+      plot(filter(maxt, Month == "01")$Year, filter(maxt, Month == "01")$tmean, xlab = "Year", ylab = "tmax", main = "January")
+      plot(filter(maxt, Month == "07")$Year, filter(maxt, Month == "07")$tmean, xlab = "Year", ylab = "tmax", main = "July")
+```
+
+![](HW3_Markdown_files/figure-markdown_github/tmax-1.png)
+
+The above plots show the change in mean maximum temperature over the years for January and July. Any patterns are difficult to discern from this visualization alone, and further analysis may be necessary. Outliers, such as a uniquely low 1994 January temperature or uniquely low 2009 July temperature, do exist.
+
+### Make a two-panel plot showing (i) tmax vs tmin for the full dataset (note that a scatterplot may not be the best option); and (ii) make a plot showing the distribution of snowfall values greater than 0 and less than 100 separately by year.
+
+``` r
+require(hexbin)
+```
+
+    ## Loading required package: hexbin
+
+``` r
+library(grid)
+library(gridExtra)
+```
+
+    ## 
+    ## Attaching package: 'gridExtra'
+
+    ## The following object is masked from 'package:dplyr':
+    ## 
+    ##     combine
+
+``` r
+plotX <- ggplot(ny_noaa_cleaned, aes(x = tmax, y = tmin)) + geom_hex()
+plotY <-ggplot(filter(ny_noaa_cleaned, snow > 0 & snow < 100), aes(x = Year, y = snow)) + geom_boxplot()+scale_x_discrete(breaks = c("1981", "1990", "2000", "2010"))
+
+grid.arrange(plotX, plotY)
+```
+
+![](HW3_Markdown_files/figure-markdown_github/maxmin-1.png)
